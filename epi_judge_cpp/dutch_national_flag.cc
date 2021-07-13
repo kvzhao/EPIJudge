@@ -8,9 +8,52 @@ using std::vector;
 enum class Color { kRed, kWhite, kBlue };
 
 void DutchFlagPartition(int pivot_index, vector<Color>* A_ptr) {
-  // TODO - you fill in here.
+  // make only one pass
+  vector<Color>& A = *A_ptr;
+  Color pivot = A[pivot_index];
+
+  int smaller = 0, larger = A.size() - 1;
+
+  for (int i = 0; i < A.size(); ++i) {
+    if (A[i] < pivot) {
+      std::swap(A[i], A[smaller++]);
+    }
+  }
+
+  for (int j = A.size() - 1; j >= 0; --j) {
+    if (A[j] > pivot) {
+      std::swap(A[j], A[larger--]);
+    }
+  }
   return;
 }
+
+void DutchFlagPartitionClassified(int pivot_index, vector<Color> *A_ptr) {
+
+  vector<Color> &A = *A_ptr;
+  Color pivot = A[pivot_index];
+  int smaller = 0, equal = 0, larger = A.size();
+  /*
+    bottom [0, smaller - 1]
+    middle [smaller, equal - 1]
+    unclassified [equal, larger - 1]
+    top [larger, size(A) - 1]
+  */
+
+  while (equal < larger) {
+    if (A[equal] < pivot) {
+      std::swap(A[equal++], A[smaller++]);
+    } else if (A[equal] == pivot) {
+      ++equal;
+    } else {
+      std::swap(A[equal], A[--larger]);
+    }
+  }
+
+
+  return;
+}
+
 void DutchFlagPartitionWrapper(TimedExecutor& executor, const vector<int>& A,
                                int pivot_idx) {
   vector<Color> colors;
@@ -22,7 +65,7 @@ void DutchFlagPartitionWrapper(TimedExecutor& executor, const vector<int>& A,
   }
   Color pivot = colors[pivot_idx];
 
-  executor.Run([&] { DutchFlagPartition(pivot_idx, &colors); });
+  executor.Run([&] { DutchFlagPartitionClassified(pivot_idx, &colors); });
 
   int i = 0;
   while (i < colors.size() && colors[i] < pivot) {
